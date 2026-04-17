@@ -3,6 +3,7 @@ using UnityEngine.AI;
 
 public class BatAI : MonoBehaviour
 {
+    // The brain states of our bat (it has moods too)
     public enum BatState
     {
         Idle,
@@ -43,117 +44,130 @@ public class BatAI : MonoBehaviour
 
     void Update()
     {
-        switch (currentState)
+
         {
-            case BatState.Idle:
-                Idle();
-                break;
+            // State machine magic happens here
+            switch (currentState)
+            {
+                case BatState.Idle:
+                    Idle();
+                    break;
 
-            case BatState.Alert:
-                Alert();
-                break;
+                case BatState.Alert:
+                    Alert();
+                    break;
 
-            case BatState.Chase:
-                Chase();
-                break;
+                case BatState.Chase:
+                    Chase();
+                    break;
 
-            case BatState.Search:
-                Search();
-                break;
+                case BatState.Search:
+                    Search();
+                    break;
 
-            case BatState.Respawn:
-                Respawn();
-                break;
+                case BatState.Respawn:
+                    Respawn();
+                    break;
+            }
         }
-    }
-    void Idle()
-    {
-        agent.SetDestination(transform.position);
-
-        if (CanSeePlayer() || CanHearPlayer())
+        void Idle()
         {
-            currentState = BatState.Alert;
+            // Just vibing... until something suspicious happens
+            agent.SetDestination(transform.position);
+
+            if (CanSeePlayer() || CanHearPlayer())
+            {
+                currentState = BatState.Alert;
+            }
         }
-    }
 
-    void Alert()
-    {
-        agent.SetDestination(player.position);
-
-        if (CanSeePlayer())
+        void Alert()
         {
-            currentState = BatState.Chase;
+           
+                // "I heard something..." — moving to investigate
+                agent.SetDestination(player.position);
+
+            if (CanSeePlayer())
+            {
+                currentState = BatState.Chase;
+            }
+            else
+            {
+                lastKnownPosition = player.position;
+                currentState = BatState.Search;
+            }
         }
-        else
+
+        void Chase()
         {
-            lastKnownPosition = player.position;
-            currentState = BatState.Search;
+            // Target locked. No chill.
+            agent.SetDestination(player.position);
+
+            if (!CanSeePlayer())
+            {
+                lastKnownPosition = player.position;
+                currentState = BatState.Search;
+            }
         }
-    }
 
-    void Chase()
-    {
-        agent.SetDestination(player.position);
-
-        if (!CanSeePlayer())
+        void Search()
         {
-            lastKnownPosition = player.position;
-            currentState = BatState.Search;
+            // "I swear they were right here..."
+            agent.SetDestination(lastKnownPosition);
+
+            searchTimer += Time.deltaTime;
+
+            if (CanSeePlayer())
+            {
+                currentState = BatState.Chase;
+            }
+            else if (searchTimer >= searchTime)
+            {
+                searchTimer = 0;
+                currentState = BatState.Idle;
+            }
         }
-    }
 
-    void Search()
-    {
-        agent.SetDestination(lastKnownPosition);
-
-        searchTimer += Time.deltaTime;
-
-        if (CanSeePlayer())
+        void Respawn()
         {
-            currentState = BatState.Chase;
-        }
-        else if (searchTimer >= searchTime)
-        {
-            searchTimer = 0;
+            // Teleporting back like nothing happened
+            agent.ResetPath(); // stops movement instantly
+            transform.position = spawnPoint;
             currentState = BatState.Idle;
         }
-    }
 
-    void Respawn()
-    {
-        agent.ResetPath(); // stops movement instantly
-        transform.position = spawnPoint;
-        currentState = BatState.Idle;
-    }
-
-    bool CanSeePlayer()
-    {
-        Vector3 direction = (player.position - transform.position).normalized;
-        float distance = Vector3.Distance(transform.position, player.position);
-
-        if (distance < viewDistance)
+        bool CanSeePlayer()
         {
-            float angle = Vector3.Angle(transform.forward, direction);
+            // Check distance first so we’re not doing extra work
+            Vector3 direction = (player.position - transform.position).normalized;
+            float distance = Vector3.Distance(transform.position, player.position);
 
-            if (angle < viewAngle)
+            // Make sure the player is actually in front of us (no eyes in the back of the head)
+            if (distance < viewDistance)
             {
-                RaycastHit hit;
-                if (Physics.Raycast(transform.position, direction, out hit, viewDistance))
+                float angle = Vector3.Angle(transform.forward, direction);
+
+                if (angle < viewAngle)
                 {
-                    if (hit.collider.CompareTag("Player"))
+                    // Raycast = "is there a wall in the way?"
+                    RaycastHit hit;
+                    if (Physics.Raycast(transform.position, direction, out hit, viewDistance))
                     {
-                        return true;
+                        if (hit.collider.CompareTag("Player"))
+                        {
+                            return true;
+                        }
                     }
                 }
             }
+            return false;
         }
-        return false;
-    }
 
-    bool CanHearPlayer()
-    {
-        float distance = Vector3.Distance(transform.position, player.position);
-        return distance < hearingRange;
+        bool CanHearPlayer()
+        {
+            float distance = Vector3.Distance(transform.position, player.position);
+            return distance < hearingRange;
+        }
     }
 
     public void OnPlayerNoise(Vector3 noisePosition)

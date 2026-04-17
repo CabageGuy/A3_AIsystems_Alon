@@ -24,6 +24,7 @@ public class ItemPickup : MonoBehaviour
 
     void PickUp()
     {
+        // Congrats, the item is now yours (temporarily)
         isHeld = true;
         transform.SetParent(holdPoint);
         transform.localPosition = Vector3.zero;
@@ -33,6 +34,7 @@ public class ItemPickup : MonoBehaviour
 
     void Drop()
     {
+        // Butterfingers moment
         isHeld = false;
         transform.SetParent(null);
 
@@ -71,6 +73,7 @@ public class ItemPickup : MonoBehaviour
     }
     public void ResetItem()
     {
+        // Back to where it all began
         isHeld = false;
 
         transform.SetParent(null);
