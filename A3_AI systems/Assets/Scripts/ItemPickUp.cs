@@ -4,6 +4,8 @@ public class ItemPickup : MonoBehaviour
 {
     private bool isHeld = false;
     public Transform holdPoint;
+    private Vector3 startPosition;
+    private Quaternion startRotation;
 
     void Update()
     {
@@ -28,7 +30,23 @@ public class ItemPickup : MonoBehaviour
 
         MakeNoise();
     }
+    public void ForceDrop()
+    {
+        if (!isHeld) return;
 
+        isHeld = false;
+
+        transform.SetParent(null);
+
+        Rigidbody rb = GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            rb.isKinematic = false;
+            rb.AddForce(Vector3.forward * 3f, ForceMode.Impulse); // small toss effect
+        }
+
+        MakeNoise();
+    }
     void Drop()
     {
         isHeld = false;
@@ -49,5 +67,40 @@ public class ItemPickup : MonoBehaviour
                 bat.OnPlayerNoise(transform.position);
             }
         }
+    }
+    public void ForceDrop()
+    {
+        if (!isHeld) return;
+
+        isHeld = false;
+
+        transform.SetParent(null);
+
+        Rigidbody rb = GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            rb.isKinematic = false;
+            rb.AddForce(Vector3.forward * 3f, ForceMode.Impulse); // small toss effect
+        }
+
+        MakeNoise();
+    }
+    public void ResetItem()
+    {
+        isHeld = false;
+
+        transform.SetParent(null);
+        transform.position = startPosition;
+        transform.rotation = startRotation;
+
+        Rigidbody rb = GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            rb.isKinematic = false;
+        }
+    }
+    public bool IsHeld()
+    {
+        return isHeld;
     }
 }

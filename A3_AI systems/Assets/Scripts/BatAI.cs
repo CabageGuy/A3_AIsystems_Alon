@@ -11,7 +11,7 @@ public class BatAI : MonoBehaviour
         Search,
         Respawn
     }
-
+    public ItemPickup item;
     public BatState currentState;
 
     private NavMeshAgent agent;
@@ -121,6 +121,7 @@ public class BatAI : MonoBehaviour
 
     void Respawn()
     {
+        agent.ResetPath(); // stops movement instantly
         transform.position = spawnPoint;
         currentState = BatState.Idle;
     }
@@ -165,4 +166,18 @@ public class BatAI : MonoBehaviour
     {
         currentState = BatState.Respawn;
     }
+    void OnTriggerEnter(Collider other)
+    {
+        if (other.CompareTag("Player"))
+        {
+            if (item != null && item.IsHeld())
+            {
+                item.ForceDrop();   // player drops item FIRST
+                item.ResetItem();   // THEN it resets (optional, see below)
+            }
+
+            currentState = BatState.Respawn;
+        }
+    }
+
 }
