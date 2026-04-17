@@ -30,23 +30,7 @@ public class ItemPickup : MonoBehaviour
 
         MakeNoise();
     }
-    public void ForceDrop()
-    {
-        if (!isHeld) return;
 
-        isHeld = false;
-
-        transform.SetParent(null);
-
-        Rigidbody rb = GetComponent<Rigidbody>();
-        if (rb != null)
-        {
-            rb.isKinematic = false;
-            rb.AddForce(Vector3.forward * 3f, ForceMode.Impulse); // small toss effect
-        }
-
-        MakeNoise();
-    }
     void Drop()
     {
         isHeld = false;

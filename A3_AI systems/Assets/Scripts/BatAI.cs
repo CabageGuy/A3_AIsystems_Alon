@@ -172,8 +172,7 @@ public class BatAI : MonoBehaviour
         {
             if (item != null && item.IsHeld())
             {
-                item.ForceDrop();   // player drops item FIRST
-                item.ResetItem();   // THEN it resets (optional, see below)
+                item.ResetItem();
             }
 
             currentState = BatState.Respawn;
