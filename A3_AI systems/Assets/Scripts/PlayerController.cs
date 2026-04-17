@@ -12,6 +12,7 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
+        // Basic movement (nothing fancy, just gets the job done)
         float h = Input.GetAxis("Horizontal");
         float v = Input.GetAxis("Vertical");
 
@@ -27,6 +28,7 @@ public class PlayerController : MonoBehaviour
 
     void MakeNoise()
     {
+        // Every step you take... the bat is watching (or at least listening)
         Collider[] hits = Physics.OverlapSphere(transform.position, 8f);
 
         foreach (Collider hit in hits)
